@@ -37,4 +37,4 @@ podName=$(kubectl get pods | grep $POD_NAME_SEARCH | cut -d " " -f1 | xargs)
 echo "Found: $podName"
 echo "Forwading port $REMOTE_PORT from $podName to localhost:$LOCAL_PORT"
 
-kubectl port-forward $podNameOfGalera1 $LOCAL_PORT:$REMOTE_PORT
+kubectl port-forward $podName $LOCAL_PORT:$REMOTE_PORT
