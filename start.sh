@@ -1,10 +1,5 @@
 #!/bin/bash
 
-if [ -z "$GKE_CLUSTER_NAME" ]; then
-    echo "You need to set the environment variable GKE_CLUSTER_NAME."
-    exit 1;
-fi
-
 if [ -z "$POD_NAME_SEARCH" ]; then
     echo "You need to set the environment variable POD_NAME_SEARCH."
     exit 1;
