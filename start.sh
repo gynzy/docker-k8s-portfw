@@ -10,7 +10,7 @@ if [ -z "$GKE_CLUSTER_NAME" ]; then
     exit 1;
 fi
 
-if [ -z "$POD_NAME_SEARCH" ]; then
+if [ -z "$NODE_NAME_SEARCH" ]; then
     echo "You need to set the environment variable POD_NAME_SEARCH."
     exit 1;
 fi
@@ -25,16 +25,25 @@ if [ -z "$REMOTE_PORT" ]; then
     exit 1;
 fi
 
+if [ -z "$GCE_ZONE" ]; then
+    echo "You need to set the environment variable GCE_ZONE."
+    exit 1;
+fi
+
+if [ -z "$GCE_PROJECT" ]; then
+    echo "You need to set the environment variable GCE_PROJECT."
+    exit 1;
+fi
+
 echo $GCE_JSON > /gce.json
 
 echo "Preparing GCE credentials..."
-gcloud auth activate-service-account --key-file=/gce.json --project=unicorn-985
-gcloud container clusters get-credentials $GKE_CLUSTER_NAME --zone europe-west1-c
+gcloud auth activate-service-account --key-file=/gce.json --project=$GCE_PROJECT
+gcloud container clusters get-credentials $GKE_CLUSTER_NAME --zone $GCE_ZONE
 export GOOGLE_APPLICATION_CREDENTIALS=/gce.json
 
-echo "Retrieving pod name containing: $POD_NAME_SEARCH"
-podName=$(kubectl get pods | grep $POD_NAME_SEARCH | cut -d " " -f1 | xargs)
-echo "Found: $podName"
-echo "Forwading port $REMOTE_PORT from $podName to localhost:$LOCAL_PORT"
-
-kubectl port-forward $podName $LOCAL_PORT:$REMOTE_PORT
+echo "Retrieving node name containing: $NODE_NAME_SEARCH"
+nodeName=$(kubectl get nodes | grep $NODE_NAME_SEARCH | head -1 | cut -d " " -f1)
+echo "Found: $nodeName"
+echo "Forwading port $REMOTE_PORT from $nodeName to 0.0.0.0:$LOCAL_PORT"
+gcloud compute ssh --ssh-flag="-L 0.0.0.0:$LOCAL_PORT:127.0.0.1:$REMOTE_PORT" --zone $GCE_ZONE $nodeName
