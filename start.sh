@@ -35,6 +35,16 @@ if [ -z "$GCE_PROJECT" ]; then
     exit 1;
 fi
 
+if [ -z "$PRIVATE_KEY" ]; then
+    echo "You need to set the environment variable PRIVATE_KEY."
+    exit 1;
+fi
+
+if [ -z "$PUBLIC_KEY" ]; then
+    echo "You need to set the environment variable PRIVATE_KEY."
+    exit 1;
+fi
+
 echo $GCE_JSON > /gce.json
 
 echo "Preparing GCE credentials..."
@@ -42,8 +52,14 @@ gcloud auth activate-service-account --key-file=/gce.json --project=$GCE_PROJECT
 gcloud container clusters get-credentials $GKE_CLUSTER_NAME --zone $GCE_ZONE
 export GOOGLE_APPLICATION_CREDENTIALS=/gce.json
 
+echo $PRIVATE_KEY > /google_compute_engine
+cat /google_compute_engine
+
+echo $PUBLIC_KEY > /google_compute_engine.pub
+cat /google_compute_engine.pub
+
 echo "Retrieving node name containing: $NODE_NAME_SEARCH"
 nodeName=$(kubectl get nodes | grep $NODE_NAME_SEARCH | head -1 | cut -d " " -f1)
 echo "Found: $nodeName"
 echo "Forwading port $REMOTE_PORT from $nodeName to 0.0.0.0:$LOCAL_PORT"
-gcloud compute ssh --ssh-flag="-L 0.0.0.0:$LOCAL_PORT:127.0.0.1:$REMOTE_PORT" --ssh-flag="-N" --ssh-flag="-n" --zone $GCE_ZONE $nodeName
+gcloud compute ssh --ssh-key-file=/google_compute_engine --ssh-flag="-L 0.0.0.0:$LOCAL_PORT:127.0.0.1:$REMOTE_PORT" --ssh-flag="-N" --ssh-flag="-n" --zone $GCE_ZONE $nodeName
