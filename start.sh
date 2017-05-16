@@ -46,4 +46,4 @@ echo "Retrieving node name containing: $NODE_NAME_SEARCH"
 nodeName=$(kubectl get nodes | grep $NODE_NAME_SEARCH | head -1 | cut -d " " -f1)
 echo "Found: $nodeName"
 echo "Forwading port $REMOTE_PORT from $nodeName to 0.0.0.0:$LOCAL_PORT"
-gcloud compute ssh --ssh-flag="-L 0.0.0.0:$LOCAL_PORT:127.0.0.1:$REMOTE_PORT" --zone $GCE_ZONE $nodeName
+gcloud compute ssh --ssh-flag="-L 0.0.0.0:$LOCAL_PORT:127.0.0.1:$REMOTE_PORT" --ssh-flag="-N" --ssh-flag="-n" --zone $GCE_ZONE $nodeName &
